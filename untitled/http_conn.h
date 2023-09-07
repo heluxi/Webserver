@@ -1,3 +1,6 @@
+//此类为封装的http请求类
+
+
 #ifndef HTTP_CONN_H
 #define HTTP_CONN_H
 
@@ -15,6 +18,7 @@
 #include<errno.h>
 #include<sys/uio.h>
 #include<locker.h>
+#include<string.h>
 
 
 class http_conn
@@ -23,6 +27,7 @@ public:
     http_conn();
     void process();//处理客户端的请求
     void init(int cfd,sockaddr_in client_addr);
+    void init();
     void close_conn();//关闭连接
     bool read();//非阻塞读数据 一次性读完数据
     bool write();//非阻塞写数据 一次性写完数据
@@ -37,8 +42,8 @@ public:
 
     static const int WRITE_BUFFER_SIZE=1024;
 
-    // HTTP请求方法，这里只支持GET
-    enum METHOD {GET = 0, POST, HEAD, PUT, DELETE, TRACE, OPTIONS, CONNECT};
+    // HTTP请求方法类型，这里只支持GET
+    enum METHOD {GET = 0, POST, HEAD , PUT, DELETE, TRACE, OPTIONS, CONNECT};
 
     /*
         解析客户端请求时，主状态机的状态
@@ -72,6 +77,12 @@ public:
     HTTP_CODE parse_headers( char* text );//解析请求头
     HTTP_CODE parse_content( char* text );//解析请求体
 
+    LINE_STATUS parse_line();//解析一行
+    char* get_line(){return m_read_buf+m_start_line;}//获取一行数据
+
+
+    HTTP_CODE do_request();
+
 private:
     int m_sockfd;//该http连接的socket
     sockaddr_in m_address;
@@ -79,8 +90,19 @@ private:
     //读缓冲
     char m_read_buf[READ_BUFFER_SIZE];
 
-    int m_read_index;//标识读缓冲区中以及读入的客户端数据的最后一个字节的下一个位置
+    int m_read_index;//标识读缓冲区中已经读入的客户端数据的最后一个字节的下一个位置
 
+    int m_start_line;                       // 当前正在解析的行的起始位置
+
+    int m_checked_index;                      // 当前正在分析的字符在读缓冲区中的位置
+
+    CHECK_STATE m_check_state;              // 主状态机当前所处的状态
+
+    char* m_url;//请求目标文件的文件名
+    char* m_version;//协议版本
+    METHOD m_method;//请求方法
+    char* m_host;//主机名
+    bool m_linger;//判断http请求是否要保持连接
 
 
 };

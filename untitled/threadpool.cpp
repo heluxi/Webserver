@@ -38,7 +38,7 @@ threadpool<T>::~threadpool()
     m_stop=true;
 }
 
-//生产者
+//相当于生产者
 template<typename T>
 bool threadpool<T>::append(T *request)
 {
@@ -67,7 +67,7 @@ void threadpool<T>::run()
             m_queuelocker.unlock();
             continue;
         }
-        T * request=m_workqueue.front();
+        T * request=m_workqueue.front();//从任务队列中取出一个任务执行
         m_workqueue.pop_front();
         m_queuelocker.unlock();
 
@@ -80,7 +80,7 @@ void threadpool<T>::run()
 }
 
 template<typename T>
-void *threadpool<T>::worker(void *arg)
+void *threadpool<T>::worker(void *arg)//每个工作者线程实际执行的是run函数
 {
     threadpool* pool=(threadpool*)arg;
     pool->run();

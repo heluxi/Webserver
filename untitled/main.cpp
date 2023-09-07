@@ -43,7 +43,9 @@ int main(int argc,char* argv[])
         exit(-1);
     }
     int port=atoi(argv[1]);
-    //对SIGPIE信号进行处理
+
+    //对SIGPIE信号进行处理 SIGPIPE 是在对一个已经关闭的写端的套接字进行写操作时产生的信号，通常会导致程序异常退出。通过调用 SIG_IGN 函数来忽略该信号，可以避免程序因此信号而异常退出。
+
     addsig(SIGPIPE,SIG_IGN);
 
     //创建线程池，初始化线程池 任务队列处理的数据就是http请求
@@ -63,7 +65,7 @@ int main(int argc,char* argv[])
         perror("socket()");
         exit(-1);
     }
-    //端口复用
+    //设置端口复用,服务器终止后可以马上运行
     int reuse=1;
     setsockopt(lfd,SOL_SOCKET,SO_REUSEADDR,&reuse,sizeof(reuse));
 
@@ -85,6 +87,7 @@ int main(int argc,char* argv[])
 
     addfd(epfd,lfd,false);
 
+    //初始化http类中的epfd文件描述符
     http_conn::m_epfd=epfd;
 
     while(1)

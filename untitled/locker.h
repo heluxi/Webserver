@@ -1,3 +1,5 @@
+//此文件包含互斥锁类的定义和信号量类的定义
+
 #ifndef LOCKER_H
 #define LOCKER_H
 #include<iostream>
